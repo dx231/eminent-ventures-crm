@@ -1,12 +1,916 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eminent Ventures CRM</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MAB PK · Dispatch Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A5C; --navy-deep:#050B14; --bg:#0B1420; --surface:#131F30; --surface2:#1C2C42;
+    --line:rgba(255,255,255,0.10); --text:#E7EDF6; --muted:#93A6C2; --heading:#F2F6FC;
+    --orange:#E8622C; --orange-deep:#C94E1F; --success:#34D399; --danger:#F87171; --pending:#F5C451; --transit:#60A5FA;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{ background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; }
+  h1,h2,h3,.brand-text .title,.hero-copy h2,.celeb-card h3,.agent-name{font-family:'Poppins',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .app{min-height:100vh;display:flex;flex-direction:column;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--line);background:var(--navy);color:#fff;flex-wrap:wrap;gap:10px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .mark{width:36px;height:36px;border-radius:9px;background:conic-gradient(from 220deg, var(--orange), #FFB27A, var(--navy), var(--orange));box-shadow:0 0 0 2px rgba(255,255,255,0.15);}
+  .brand-text .title{font-weight:700;font-size:15px;color:#fff;}
+  .brand-text .sub{font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;letter-spacing:0.04em;text-transform:uppercase;}
+  .campaign-window{font-size:12px;color:rgba(255,255,255,0.75);text-align:right;}
+  .campaign-window .day{color:#fff;font-weight:600;}
+  .logout-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:8px 14px;border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;margin-left:16px;transition:all .15s;}
+  .logout-btn:hover{background:rgba(255,255,255,0.16);}
+  .topbar-right{display:flex;align-items:center;}
+
+  main{flex:1;padding:28px;max-width:1180px;width:100%;margin:0 auto;}
+
+  .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 20% 15%, #16345B 0%, var(--navy-deep) 55%, #081524 100%);}
+  .login-card{width:100%;max-width:460px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:32px;box-shadow:var(--shadow);}
+  .login-card .mark{width:44px;height:44px;border-radius:10px;margin-bottom:18px;background:conic-gradient(from 220deg, var(--orange), #FFB27A, var(--navy), var(--orange));}
+  .login-card h1{font-size:19px;margin:0 0 4px;color:var(--heading);}
+  .login-card p.hint{color:var(--muted);font-size:13px;margin:0 0 22px;}
+  .role-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px;}
+  .role-tile{border:2px solid var(--line);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;background:var(--surface2);transition:all .15s;}
+  .role-tile:hover{border-color:var(--orange);}
+  .role-tile.selected{border-color:var(--orange);background:rgba(232,98,44,0.18);}
+  .role-tile .dot{width:16px;height:16px;border-radius:50%;margin:0 auto 6px;}
+  .role-tile .name{font-size:11.5px;font-weight:700;color:var(--heading);}
+  .role-tile.admin-tile .name{color:var(--orange);}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.02em;text-transform:uppercase;font-weight:600;}
+  select, input[type=password], input[type=text], input[type=number]{width:100%;background:var(--surface2);border:1px solid var(--line);color:var(--text);padding:11px 12px;border-radius:9px;font-family:inherit;font-size:14px;margin-bottom:16px;outline:none;transition:border-color .15s;}
+  select:focus, input:focus{border-color:var(--orange);}
+  .primary-btn{width:100%;background:var(--orange);color:#fff;border:none;padding:12px;border-radius:9px;font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:transform .1s, background .15s;}
+  .primary-btn:hover{background:var(--orange-deep);}
+  .primary-btn:active{transform:scale(0.98);}
+  .primary-btn.small{width:auto;padding:9px 16px;font-size:13px;}
+  .primary-btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .ghost-btn{background:var(--surface2);color:var(--text);border:1px solid var(--line);padding:9px 16px;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;}
+  .ghost-btn:hover{border-color:var(--muted);}
+  .error-msg{color:var(--danger);font-size:12.5px;margin:-8px 0 14px;min-height:0;}
+
+  .ring-wrap{position:relative;width:150px;height:150px;flex-shrink:0;}
+  .ring-wrap.big{width:210px;height:210px;}
+  .ring-track{position:absolute;inset:0;border-radius:50%;background:var(--surface2);box-shadow:inset 0 0 0 1px var(--line);}
+  .ring-fill{position:absolute;inset:0;border-radius:50%;}
+  .ring-sheen{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.5) 8%, transparent 16%);animation:spin 3.2s linear infinite; mix-blend-mode:overlay; opacity:0.55;}
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  @keyframes ringPop{ 0%{transform:scale(1);} 45%{transform:scale(1.1);} 100%{transform:scale(1);} }
+  .ring-wrap.pop{ animation:ringPop .6s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes glowPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(31,169,113,0.45);} 50%{ box-shadow:0 0 0 10px rgba(31,169,113,0);} }
+  .ring-wrap.complete .ring-hole{ animation:glowPulse 1.8s ease-out infinite; }
+  .ring-hole{position:absolute;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.25);}
+  .ring-wrap .ring-hole{inset:34px;}
+  .ring-wrap.big .ring-hole{inset:46px;}
+  .ring-hole .amt{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:19px;color:var(--heading);}
+  .ring-wrap.big .ring-hole .amt{font-size:27px;}
+  .ring-hole .of{font-size:10.5px;color:var(--muted);margin-top:2px;}
+  .ring-hole .pct{font-size:11px;font-weight:700;margin-top:4px;}
+
+  .section-title{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 14px;font-weight:700;}
+  .hero-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:26px;display:flex;align-items:center;gap:28px;margin-bottom:26px;flex-wrap:wrap;}
+  .hero-copy h2{margin:0 0 6px;font-size:20px;color:var(--heading);}
+  .hero-copy p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5;max-width:420px;}
+  .hero-stats{display:flex;gap:22px;margin-top:16px;flex-wrap:wrap;}
+  .hero-stat .num{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;color:var(--heading);}
+  .hero-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:26px;}
+  @media (max-width:800px){.two-col{grid-template-columns:1fr;} .role-tiles{grid-template-columns:repeat(2,1fr);}}
+  .leaderboard{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px;}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .lb-row:last-child{border-bottom:none;}
+  .lb-rank{width:22px;height:22px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;}
+  .lb-row:nth-child(1) .lb-rank{background:rgba(232,98,44,0.22);color:var(--orange);}
+  .lb-name{flex:1;font-weight:600;font-size:13.5px;}
+  .lb-amt{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--heading);font-weight:600;}
+
+  .bonus-panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px;margin-bottom:26px;}
+  .bonus-summary{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:16px;}
+  .bonus-summary .num{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--orange-deep);}
+  .bonus-summary .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
+  .bonus-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .bonus-row:last-child{border-bottom:none;}
+  .bonus-row .who{font-weight:700;font-size:13.5px;width:60px;flex-shrink:0;color:var(--heading);}
+  .bonus-pill{font-size:12px;padding:5px 10px;border-radius:20px;background:rgba(232,98,44,0.1);color:var(--orange-deep);display:flex;align-items:center;gap:6px;}
+  .bonus-pill.paid{background:rgba(31,169,113,0.1);color:var(--success);}
+  .bonus-pill input{margin:0;width:auto;}
+  .no-bonus{color:var(--muted);font-size:12.5px;font-style:italic;}
+
+  .agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-bottom:28px;}
+  .agent-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px;cursor:pointer;transition:border-color .15s;}
+  .agent-card:hover{border-color:var(--orange);}
+  .agent-card.expanded{border-color:var(--orange);}
+  .agent-card-top{display:flex;align-items:center;gap:14px;}
+  .agent-mini-ring{position:relative;width:58px;height:58px;flex-shrink:0;}
+  .agent-mini-ring .ring-hole{inset:14px;}
+  .agent-name{font-weight:700;font-size:15px;color:var(--heading);}
+  .agent-total{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);margin-top:2px;}
+  .badge-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+  .badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em;}
+  .badge.milestone{background:rgba(232,98,44,0.12);color:var(--orange-deep);}
+  .badge.target{background:rgba(31,169,113,0.12);color:var(--success);}
+  .badge.pending-badge{background:rgba(217,166,46,0.15);color:var(--pending);}
+
+  .status-select{margin:0;padding:5px 8px;font-size:12px;border-radius:7px;width:auto;min-width:110px;}
+  .status-select.st-picked_up{color:var(--muted);}
+  .status-select.st-delivered{color:var(--transit);}
+  .status-select.st-pending{color:var(--pending);}
+  .status-select.st-paid{color:var(--success);font-weight:700;}
+
+  .entries-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px;}
+  .entries-table th{text-align:left;color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid var(--line);}
+  .entries-table td{padding:9px 10px;border-bottom:1px solid var(--line);font-family:'JetBrains Mono',monospace;vertical-align:middle;}
+  .entries-table tr:last-child td{border-bottom:none;}
+  .empty-row td{color:var(--muted);font-family:'Inter',sans-serif;font-style:italic;}
+  .icon-btn{background:none;border:1px solid var(--line);width:26px;height:26px;border-radius:7px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;line-height:1;margin-right:4px;}
+  .icon-btn.del{color:var(--danger);}
+  .icon-btn.del:hover{background:rgba(220,53,69,0.08);border-color:var(--danger);}
+  .icon-btn.edit{color:var(--heading);}
+  .icon-btn.edit:hover{background:rgba(255,255,255,0.06);border-color:var(--heading);}
+  .edit-row input{margin:0;padding:6px 8px;font-size:12.5px;width:100%;}
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:22px;box-shadow:var(--shadow);}
+  .add-form{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;}
+  .add-form .field{flex:1;min-width:130px;}
+  .add-form .field input, .add-form .field select{margin-bottom:0;}
+  .add-form .primary-btn{width:auto;padding:11px 22px;white-space:nowrap;}
+  .search-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px;}
+  .search-row input{max-width:220px;margin-bottom:0;}
+  .hint-text{color:var(--muted);font-size:12px;margin:-8px 0 14px;}
+
+  .agent-view-grid{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;margin-bottom:24px;}
+  .pw-row{display:flex;gap:8px;align-items:center;margin-top:10px;}
+  .pw-row input{margin-bottom:0;max-width:110px;}
+  .reset-btn{background:none;border:1px solid rgba(220,53,69,0.4);color:var(--danger);padding:9px 16px;border-radius:8px;font-family:inherit;font-size:12.5px;cursor:pointer;}
+  .reset-btn:hover{background:rgba(220,53,69,0.06);}
+
+  .celebration{position:fixed;inset:0;background:rgba(10,31,56,0.75);z-index:50;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+  .celebration.show{opacity:1;pointer-events:all;}
+  .celeb-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:40px;text-align:center;max-width:360px;transform:scale(0.8) rotate(-2deg);transition:transform .4s cubic-bezier(.2,1.6,.4,1);box-shadow:0 20px 60px rgba(0,0,0,0.35);position:relative;overflow:hidden;}
+  .celebration.show .celeb-card{transform:scale(1) rotate(0deg);}
+  .celeb-ring{width:88px;height:88px;border-radius:50%;margin:0 auto 18px;background:conic-gradient(var(--orange),#FFB27A,var(--navy),var(--success),var(--orange));animation:spin 6s linear infinite;display:flex;align-items:center;justify-content:center;font-size:34px;}
+  .celeb-card h3{margin:0 0 8px;font-size:19px;color:var(--heading);}
+  .celeb-card p{margin:0 0 20px;color:var(--muted);font-size:13.5px;line-height:1.5;}
+  .celeb-card .bonus{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--orange-deep);font-size:16px;margin-bottom:20px;}
+  .celeb-close{background:var(--orange);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:600;cursor:pointer;}
+  .celeb-close:hover{background:var(--orange-deep);}
+  .celeb-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .confetti-piece{position:absolute;top:-10px;width:8px;height:14px;opacity:0.9;animation:confettiFall linear forwards;}
+  @keyframes confettiFall{ to{ transform:translateY(420px) rotate(540deg); opacity:0; } }
+
+  @media (max-width:640px){
+    main{padding:18px;}
+    .hero-card{flex-direction:column;align-items:flex-start;}
+    .agent-view-grid{flex-direction:column;align-items:stretch;}
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* ================= CONFIG ================= */
+const AGENTS = ["JACK","ZACK","PETER","EMMA","HENRY","JASON","MARK"];
+const INDIVIDUAL_TARGET = 2500;
+const TEAM_TARGET = 15000;
+const MILESTONE_AMOUNT = 2000;
+const MILESTONE_BONUS_PKR = 20000;
+const WEEKLY_BONUS_THRESHOLD = 850;
+const WEEKLY_BONUS_PKR = 8500;
+const CAMPAIGN_START = new Date("2026-07-15T00:00:00");
+const CAMPAIGN_END = new Date("2026-08-15T00:00:00");
+const TOTAL_WEEKS = Math.ceil(Math.round((CAMPAIGN_END - CAMPAIGN_START)/86400000) / 7);
+const DEFAULT_PASSWORD = "000";
+const ADMIN_ROLES = ["Dispatch Team","Michael","Mohammad"];
+const ADMIN_DEFAULT_PASSWORDS = { "Dispatch Team":"mab11", "Michael":"mab11", Mohammad:"mab11" };
+const LEGACY_ADMIN_KEY_MAP = { "Dispatcher":"Dispatch Team", "Owner":"Michael" };
+const STORAGE_KEY = "dispatch-board-state-v2";
+const STATUS_LABELS = { picked_up:"Picked up", delivered:"Delivered", pending:"Pending payment", paid:"Paid" };
+const STATUS_ORDER = ["picked_up","delivered","pending","paid"];
+
+function agentColor(name){
+  const idx = AGENTS.indexOf(name);
+  const hue = Math.round((360/AGENTS.length) * idx);
+  return `hsl(${hue}, 68%, 50%)`;
+}
+
+/* ================= STATE ================= */
+let state = null;
+let session = null;
+let expandedAgent = null;
+let editingEntryId = null;
+let searchQuery = "";
+let prevPercents = {};
+let prevValues = {};
+let loginSelection = null;
+
+function blankAgent(){
+  return { entries: [], milestoneShown:false, targetShown:false, password: DEFAULT_PASSWORD, milestonePaid:false, weeklyPaid:{} };
+}
+function defaultState(){
+  const agents = {};
+  AGENTS.forEach(a=>{ agents[a] = blankAgent(); });
+  const admins = {};
+  ADMIN_ROLES.forEach(r=>{ admins[r] = { password: ADMIN_DEFAULT_PASSWORDS[r] }; });
+  return { agents, admins };
+}
+async function loadState(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, true);
+    if(res && res.value){
+      state = JSON.parse(res.value);
+      if(!state.admins) state.admins = {};
+      Object.keys(LEGACY_ADMIN_KEY_MAP).forEach(oldKey=>{
+        const newKey = LEGACY_ADMIN_KEY_MAP[oldKey];
+        if(state.admins[oldKey] && !state.admins[newKey]){
+          state.admins[newKey] = state.admins[oldKey];
+        }
+        delete state.admins[oldKey];
+      });
+      ADMIN_ROLES.forEach(r=>{ if(!state.admins[r]) state.admins[r] = { password: ADMIN_DEFAULT_PASSWORDS[r] }; });
+      if(!state.adminPwMigrationMab11){
+        ADMIN_ROLES.forEach(r=>{ state.admins[r].password = "mab11"; });
+        state.adminPwMigrationMab11 = true;
+      }
+      AGENTS.forEach(a=>{
+        if(!state.agents[a]) state.agents[a] = blankAgent();
+        if(state.agents[a].milestonePaid === undefined) state.agents[a].milestonePaid = false;
+        if(!state.agents[a].weeklyPaid) state.agents[a].weeklyPaid = {};
+        if(!state.agents[a].password) state.agents[a].password = DEFAULT_PASSWORD;
+        // migrate older entry shapes onto the broker-fee + 4-stage status model
+        state.agents[a].entries.forEach(e=>{
+          if(e.brokerFee === undefined || e.brokerFee === null){
+            e.brokerFee = Number(e.brokerFee || e.amount || e.totalAmount || 0);
+          }
+          if(!e.status){ e.status = "paid"; }
+          if(!STATUS_ORDER.includes(e.status)) e.status = "paid";
+          if(e.status === "paid" && !e.paidDateISO) e.paidDateISO = e.dateISO || new Date().toISOString();
+        });
+      });
+    } else { state = defaultState(); await saveState(); }
+  }catch(e){ state = defaultState(); await saveState(); }
+  await saveState();
+}
+async function saveState(){
+  try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state), true); }
+  catch(e){ console.error("Save failed", e); }
+}
+function agentTotal(name){ return state.agents[name].entries.filter(e=>e.status==="paid").reduce((s,e)=>s+Number(e.brokerFee),0); }
+function teamTotal(){ return AGENTS.reduce((s,a)=>s+agentTotal(a),0); }
+function openCount(name){ return state.agents[name].entries.filter(e=>e.status!=="paid").length; }
+function recomputeFlags(name){
+  const t = agentTotal(name);
+  if(t < MILESTONE_AMOUNT) state.agents[name].milestoneShown = false;
+  if(t < INDIVIDUAL_TARGET) state.agents[name].targetShown = false;
+}
+function weekIndexOf(dateISO){ return Math.floor((new Date(dateISO) - CAMPAIGN_START) / (7*86400000)); }
+function currentWeekIndex(){ return weekIndexOf(new Date().toISOString()); }
+function weeklyTotalForWeek(name, wi){
+  return state.agents[name].entries.filter(e=>e.status==="paid" && weekIndexOf(e.paidDateISO)===wi).reduce((s,e)=>s+Number(e.brokerFee),0);
+}
+async function toggleMilestonePaid(name){ state.agents[name].milestonePaid = !state.agents[name].milestonePaid; await saveState(); renderAdminView(); }
+async function toggleWeeklyPaid(name, wi){ state.agents[name].weeklyPaid[wi] = !state.agents[name].weeklyPaid[wi]; await saveState(); renderAdminView(); }
+
+/* ================= SOUND ================= */
+function playChime(kind){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = kind==="target" ? [523.25,659.25,783.99,1046.5] : [523.25,659.25,783.99];
+    notes.forEach((freq,i)=>{
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.type = "sine"; osc.frequency.value = freq;
+      osc.connect(gain); gain.connect(ctx.destination);
+      const t0 = ctx.currentTime + i*0.12;
+      gain.gain.setValueAtTime(0.001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.18, t0+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0+0.28);
+      osc.start(t0); osc.stop(t0+0.3);
+    });
+  }catch(e){}
+}
+
+/* ================= CUSTOM MODAL (confirm) ================= */
+function showConfirmModal(message, confirmLabel){
+  return new Promise(resolve=>{
+    const el = document.getElementById("overlay-modal");
+    if(!el){ resolve(true); return; }
+    el.innerHTML = `
+      <div class="celeb-card" style="max-width:340px;">
+        <p style="margin:0 0 20px;color:var(--text);font-size:14px;line-height:1.5;">${message}</p>
+        <div class="celeb-actions">
+          <button class="celeb-close" id="confirm-yes">${confirmLabel||"Yes, continue"}</button>
+          <button class="ghost-btn" id="confirm-no">Cancel</button>
+        </div>
+      </div>
+    `;
+    requestAnimationFrame(()=>el.classList.add("show"));
+    document.getElementById("confirm-yes").onclick = ()=>{ el.classList.remove("show"); resolve(true); };
+    document.getElementById("confirm-no").onclick = ()=>{ el.classList.remove("show"); resolve(false); };
+  });
+}
+
+/* ================= RING RENDERING + JS-DRIVEN ANIMATION ================= */
+function ringFillStyle(percent, color){
+  const p = Math.max(0, Math.min(100, percent));
+  const inner = 100 - p;
+  return `background: radial-gradient(circle, transparent 0%, transparent ${inner}%, ${color} ${inner}%, ${color} 100%);`;
+}
+function renderRing(opts){
+  const pct = opts.target > 0 ? Math.round((opts.value/opts.target)*100) : 0;
+  const key = opts.key || "ring";
+  const fromPct = prevPercents[key] !== undefined ? prevPercents[key] : 0;
+  const fromVal = prevValues[key] !== undefined ? prevValues[key] : 0;
+  const complete = pct >= 100;
+  const holeContent = opts.mini ? "" : `
+      <div class="amt">$${Math.round(fromVal).toLocaleString()}</div>
+      <div class="of">of $${opts.target.toLocaleString()}</div>
+      <div class="pct" style="color:${opts.color}">${Math.round(fromPct)}%</div>
+  `;
+  return `
+    <div class="ring-wrap ${opts.big?'big':''} ${complete && !opts.mini?'complete':''}"
+         data-ring-key="${key}" data-target-pct="${pct}" data-target-val="${opts.value}"
+         data-from-pct="${fromPct}" data-from-val="${fromVal}" data-color="${opts.color}"
+         ${opts.mini?'style="width:58px;height:58px;"':''}>
+      <div class="ring-track"></div>
+      <div class="ring-fill" style="${ringFillStyle(fromPct, opts.color)}"></div>
+      <div class="ring-sheen"></div>
+      <div class="ring-hole" style="${opts.mini?'inset:14px;':''}">${holeContent}</div>
+    </div>
+  `;
+}
+function runRingAnimations(){
+  document.querySelectorAll("[data-ring-key]").forEach(el=>{
+    const key = el.getAttribute("data-ring-key");
+    const toPct = parseFloat(el.getAttribute("data-target-pct"));
+    const toVal = parseFloat(el.getAttribute("data-target-val"));
+    const fromPct = parseFloat(el.getAttribute("data-from-pct"));
+    const fromVal = parseFloat(el.getAttribute("data-from-val"));
+    const color = el.getAttribute("data-color");
+    const fillEl = el.querySelector(".ring-fill");
+    const amtEl = el.querySelector(".amt");
+    const pctEl = el.querySelector(".pct");
+    if(fromPct === toPct && fromVal === toVal){ prevPercents[key]=toPct; prevValues[key]=toVal; return; }
+    const duration = 750;
+    const start = performance.now();
+    function ease(t){ return 1 - Math.pow(1-t, 3); }
+    function frame(now){
+      const t = Math.min(1, (now-start)/duration);
+      const e = ease(t);
+      const curPct = fromPct + (toPct-fromPct)*e;
+      const curVal = fromVal + (toVal-fromVal)*e;
+      fillEl.style.background = ringFillStyle(curPct, color).replace("background: ","");
+      if(amtEl) amtEl.textContent = "$" + Math.round(curVal).toLocaleString();
+      if(pctEl) pctEl.textContent = Math.round(curPct) + "%";
+      if(t < 1){ requestAnimationFrame(frame); }
+      else{ el.classList.add("pop"); setTimeout(()=>el.classList.remove("pop"), 650); }
+    }
+    requestAnimationFrame(frame);
+    prevPercents[key] = toPct;
+    prevValues[key] = toVal;
+  });
+}
+
+function campaignInfo(){
+  const now = new Date();
+  const totalDays = Math.round((CAMPAIGN_END - CAMPAIGN_START)/86400000);
+  let dayNum = Math.floor((now - CAMPAIGN_START)/86400000) + 1;
+  if(dayNum < 1) dayNum = 0;
+  if(dayNum > totalDays) dayNum = totalDays;
+  return { dayNum, totalDays };
+}
+
+/* ================= LOGIN / FRONT PAGE ================= */
+function renderLogin(){
+  const root = document.getElementById("root");
+  const adminTiles = ADMIN_ROLES.map(r=>`
+    <div class="role-tile admin-tile ${loginSelection && loginSelection.role==='admin' && loginSelection.adminName===r ? 'selected':''}" data-role="admin" data-name="${r}">
+      <div class="dot" style="background:var(--orange);"></div>
+      <div class="name">${r}</div>
+    </div>
+  `);
+  const agentTiles = AGENTS.map(a=>`
+    <div class="role-tile ${loginSelection && loginSelection.role==='agent' && loginSelection.name===a ? 'selected':''}" data-role="agent" data-name="${a}">
+      <div class="dot" style="background:${agentColor(a)};"></div>
+      <div class="name">${a}</div>
+    </div>
+  `);
+  root.innerHTML = `
+    <div class="login-screen">
+      <div class="login-card">
+        <div class="mark"></div>
+        <h1>Dispatch Board</h1>
+        <p class="hint">MAB PK Management · July 15 – Aug 15 push. Pick who's logging in.</p>
+        <label style="margin-bottom:8px;">Admin access</label>
+        <div class="role-tiles" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">${adminTiles.join("")}</div>
+        <label style="margin-bottom:8px;">Agents (view only)</label>
+        <div class="role-tiles">${agentTiles.join("")}</div>
+        ${loginSelection ? `
+          <label>Password</label>
+          <input type="password" id="pw-input" placeholder="Enter password" />
+          <div class="error-msg" id="login-error"></div>
+          <button class="primary-btn" id="login-btn">Log in as ${loginSelection.role==='admin' ? loginSelection.adminName : loginSelection.name}</button>
+        ` : `<p class="hint-text" style="margin-top:0;">Select a name above to continue.</p>`}
+      </div>
+    </div>
+  `;
+  document.querySelectorAll(".role-tile").forEach(tile=>{
+    tile.addEventListener("click", ()=>{
+      const role = tile.getAttribute("data-role");
+      loginSelection = role === "admin" ? {role:"admin", adminName:tile.getAttribute("data-name")} : {role:"agent", name:tile.getAttribute("data-name")};
+      renderLogin();
+      const pw = document.getElementById("pw-input");
+      if(pw) pw.focus();
+    });
+  });
+  const loginBtn = document.getElementById("login-btn");
+  if(loginBtn){
+    loginBtn.addEventListener("click", handleLogin);
+    document.getElementById("pw-input").addEventListener("keydown", (e)=>{ if(e.key==="Enter") handleLogin(); });
+  }
+}
+function handleLogin(){
+  const pw = document.getElementById("pw-input").value;
+  const errEl = document.getElementById("login-error");
+  if(loginSelection.role === "admin"){
+    if(pw === state.admins[loginSelection.adminName].password){ session = { role:"admin", adminName:loginSelection.adminName }; loginSelection=null; render(); }
+    else { errEl.textContent = "Incorrect password."; }
+  } else {
+    if(pw === state.agents[loginSelection.name].password){ session = { role:"agent", name:loginSelection.name }; loginSelection=null; render(); }
+    else { errEl.textContent = "Incorrect password."; }
+  }
+}
+
+function topbarHtml(title){
+  const {dayNum,totalDays} = campaignInfo();
+  return `
+    <div class="topbar">
+      <div class="brand">
+        <div class="mark"></div>
+        <div class="brand-text"><div class="title">${title}</div><div class="sub">MAB PK Dispatch Board</div></div>
+      </div>
+      <div class="topbar-right">
+        <div class="campaign-window">Jul 15 &rarr; Aug 15 &nbsp;·&nbsp; <span class="day">Day ${dayNum} of ${totalDays}</span></div>
+        <button class="logout-btn" id="logout-btn">Log out</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ================= SHARED: entry row builders ================= */
+function statusPillHtml(e){
+  return `<span class="status-select st-${e.status}" style="border:1px solid var(--line);border-radius:20px;padding:4px 10px;background:var(--surface2);display:inline-block;">${STATUS_LABELS[e.status]}</span>`;
+}
+function statusSelectHtml(agentName, e){
+  return `
+    <select class="status-select st-${e.status}" data-status-for="${e.id}" data-agent="${agentName}">
+      ${STATUS_ORDER.map(s=>`<option value="${s}" ${e.status===s?'selected':''}>${STATUS_LABELS[s]}</option>`).join("")}
+    </select>
+  `;
+}
+function entryRowHtml(agentName, e, readOnly){
+  if(readOnly){
+    return `
+      <tr>
+        <td>${e.orderId}</td>
+        <td>$${Number(e.brokerFee||0).toLocaleString()}</td>
+        <td>${statusPillHtml(e)}</td>
+        <td style="font-family:'Inter',sans-serif;color:var(--muted);">${e.notes||''}</td>
+        <td>${e.date}</td>
+      </tr>`;
+  }
+  if(editingEntryId === e.id){
+    return `
+      <tr class="edit-row" data-id="${e.id}">
+        <td><input type="text" class="edit-orderid" value="${e.orderId}"/></td>
+        <td><input type="number" class="edit-fee" value="${e.brokerFee||0}"/></td>
+        <td>${statusSelectHtml(agentName, e)}</td>
+        <td><input type="text" class="edit-notes" value="${e.notes||''}"/></td>
+        <td>${e.date}</td>
+        <td style="white-space:nowrap;">
+          <button class="icon-btn edit" data-save="${e.id}" data-agent="${agentName}" title="Save">✓</button>
+          <button class="icon-btn del" data-cancel="1" title="Cancel">✕</button>
+        </td>
+      </tr>`;
+  }
+  return `
+    <tr>
+      <td>${e.orderId}</td>
+      <td>$${Number(e.brokerFee||0).toLocaleString()}</td>
+      <td>${statusSelectHtml(agentName, e)}</td>
+      <td style="font-family:'Inter',sans-serif;color:var(--muted);">${e.notes||''}</td>
+      <td>${e.date}</td>
+      <td style="white-space:nowrap;">
+        <button class="icon-btn edit" data-edit="${e.id}" title="Edit">✎</button>
+        <button class="icon-btn del" data-del="${e.id}" data-agent="${agentName}" title="Remove">✕</button>
+      </td>
+    </tr>`;
+}
+function tableHeadHtml(){ return `<thead><tr><th>Order ID</th><th>Broker fee</th><th>Status</th><th>Notes</th><th>Date</th><th></th></tr></thead>`; }
+function tableHeadReadOnlyHtml(){ return `<thead><tr><th>Order ID</th><th>Broker fee</th><th>Status</th><th>Notes</th><th>Date</th></tr></thead>`; }
+function filterEntries(entries){
+  if(!searchQuery) return entries;
+  const q = searchQuery.toLowerCase();
+  return entries.filter(e => (e.orderId||"").toLowerCase().includes(q) || (e.notes||"").toLowerCase().includes(q));
+}
+
+function bindEntryRowEvents(agentName, rerenderFn){
+  document.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.addEventListener("click",(e)=>{ e.stopPropagation(); handleDeleteEntry(btn.getAttribute("data-agent")||agentName, btn.getAttribute("data-del"), rerenderFn); });
+  });
+  document.querySelectorAll("[data-edit]").forEach(btn=>{
+    btn.addEventListener("click",(e)=>{ e.stopPropagation(); editingEntryId = btn.getAttribute("data-edit"); rerenderFn(); });
+  });
+  document.querySelectorAll("[data-save]").forEach(btn=>{
+    btn.addEventListener("click",(e)=>{ e.stopPropagation(); handleSaveEdit(btn.getAttribute("data-agent"), btn.getAttribute("data-save"), rerenderFn); });
+  });
+  document.querySelectorAll("[data-cancel]").forEach(btn=>{
+    btn.addEventListener("click",(e)=>{ e.stopPropagation(); editingEntryId = null; rerenderFn(); });
+  });
+  document.querySelectorAll("[data-status-for]").forEach(sel=>{
+    sel.addEventListener("click",(e)=>e.stopPropagation());
+    sel.addEventListener("change",(e)=>{
+      e.stopPropagation();
+      handleStatusChange(sel.getAttribute("data-agent"), sel.getAttribute("data-status-for"), sel.value, rerenderFn);
+    });
+  });
+}
+
+async function handleDeleteEntry(name, id, rerenderFn){
+  const ok = await showConfirmModal("Remove this order entry? This can't be undone.", "Yes, remove it");
+  if(!ok) return;
+  state.agents[name].entries = state.agents[name].entries.filter(e=>e.id !== id);
+  recomputeFlags(name);
+  await saveState();
+  rerenderFn();
+}
+async function handleSaveEdit(name, id, rerenderFn){
+  const row = document.querySelector(`tr[data-id="${id}"]`);
+  const orderId = row.querySelector(".edit-orderid").value.trim();
+  const brokerFee = parseFloat(row.querySelector(".edit-fee").value) || 0;
+  const notes = row.querySelector(".edit-notes").value.trim();
+  if(!orderId) return;
+  const entry = state.agents[name].entries.find(e=>e.id===id);
+  if(entry){ entry.orderId = orderId; entry.brokerFee = brokerFee; entry.notes = notes; }
+  recomputeFlags(name);
+  editingEntryId = null;
+  await saveState();
+  rerenderFn();
+}
+async function addOrderEntry(name, orderId, brokerFee, notes, status, rerenderFn){
+  const now = new Date();
+  const date = now.toLocaleDateString(undefined, {month:"short", day:"numeric"});
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const entry = { id, orderId, brokerFee: brokerFee||0, notes: notes||"", status: status||"picked_up", date, dateISO: now.toISOString() };
+  if(entry.status === "paid") entry.paidDateISO = now.toISOString();
+  const prevTotal = agentTotal(name);
+  state.agents[name].entries.push(entry);
+  await saveState();
+  rerenderFn();
+  if(entry.status === "paid") checkCelebrations(name, prevTotal);
+}
+function checkCelebrations(name, prevTotal){
+  const newTotal = agentTotal(name);
+  let triggered = [];
+  if(prevTotal < MILESTONE_AMOUNT && newTotal >= MILESTONE_AMOUNT && !state.agents[name].milestoneShown){ state.agents[name].milestoneShown = true; triggered.push("milestone"); }
+  if(prevTotal < INDIVIDUAL_TARGET && newTotal >= INDIVIDUAL_TARGET && !state.agents[name].targetShown){ state.agents[name].targetShown = true; triggered.push("target"); }
+  if(triggered.length){ saveState(); }
+  if(triggered.includes("milestone")){ showCelebration("milestone", name); playChime("milestone"); }
+  else if(triggered.includes("target")){ showCelebration("target", name); playChime("target"); }
+}
+async function handleStatusChange(name, id, newStatus, rerenderFn){
+  const entry = state.agents[name].entries.find(e=>e.id===id);
+  if(!entry) return;
+  const prevTotal = agentTotal(name);
+  const wasPaid = entry.status === "paid";
+  entry.status = newStatus;
+  if(newStatus === "paid"){
+    entry.paidDateISO = new Date().toISOString();
+    entry.date = new Date().toLocaleDateString(undefined, {month:"short", day:"numeric"});
+  }
+  recomputeFlags(name);
+  await saveState();
+  rerenderFn();
+  if(newStatus === "paid" && !wasPaid) checkCelebrations(name, prevTotal);
+}
+
+function spawnConfetti(container){
+  const colors = ["#E8622C","#FFB27A","#0F2A4A","#1FA971","#FFD166"];
+  for(let i=0;i<24;i++){
+    const p = document.createElement("div");
+    p.className = "confetti-piece"; p.style.left = Math.random()*100 + "%";
+    p.style.background = colors[i % colors.length];
+    p.style.animationDuration = (1.4 + Math.random()*1.2) + "s";
+    p.style.animationDelay = (Math.random()*0.3) + "s";
+    container.appendChild(p);
+  }
+}
+function showCelebration(type, name){
+  const el = document.getElementById("overlay-modal");
+  if(!el) return;
+  if(type === "milestone"){
+    el.innerHTML = `<div class="celeb-card"><div class="celeb-ring">🎯</div><h3>$${MILESTONE_AMOUNT} milestone hit!</h3>
+      <p>${name}, you've crossed the $${MILESTONE_AMOUNT.toLocaleString()} mark in paid broker fees this month.</p>
+      <div class="bonus">+ ${MILESTONE_BONUS_PKR.toLocaleString()} PKR bonus</div>
+      <button class="celeb-close" id="celeb-close-btn">Keep going</button></div>`;
+  } else {
+    el.innerHTML = `<div class="celeb-card"><div class="celeb-ring">🏁</div><h3>Monthly target reached!</h3>
+      <p>${name}, you hit your $${INDIVIDUAL_TARGET.toLocaleString()} target for this campaign. Congratulations!</p>
+      <button class="celeb-close" id="celeb-close-btn">Nice</button></div>`;
+  }
+  requestAnimationFrame(()=>{ el.classList.add("show"); spawnConfetti(el.querySelector(".celeb-card")); });
+  document.getElementById("celeb-close-btn").addEventListener("click", ()=>{ el.classList.remove("show"); });
+}
+
+/* ================= AGENT VIEW ================= */
+function renderAgentView(){
+  const root = document.getElementById("root");
+  const name = session.name;
+  const color = agentColor(name);
+  const total = agentTotal(name);
+  const entries = filterEntries(state.agents[name].entries.slice().reverse());
+
+  root.innerHTML = `
+    <div class="app">
+      ${topbarHtml(name + " · My Loads")}
+      <main>
+        <div class="agent-view-grid">
+          ${renderRing({value:total, target:INDIVIDUAL_TARGET, color, big:true, key:"agent-"+name})}
+          <div style="flex:1;min-width:220px;">
+            <p class="section-title">Your monthly target</p>
+            <p style="color:var(--muted);font-size:13.5px;line-height:1.6;max-width:400px;">Dispatch logs and updates each load for you — this view just shows where things stand. Only the broker fee on loads marked Paid counts toward your ring.</p>
+            <div class="badge-row">
+              ${openCount(name) ? `<span class="badge pending-badge">${openCount(name)} in progress</span>` : ""}
+              ${total >= MILESTONE_AMOUNT ? `<span class="badge milestone">$${MILESTONE_AMOUNT} milestone hit</span>` : ""}
+              ${total >= INDIVIDUAL_TARGET ? `<span class="badge target">Target reached</span>` : ""}
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="search-row">
+            <p class="section-title" style="margin:0;">Your loads</p>
+            <input type="text" id="search-input" placeholder="Search order ID or notes" value="${searchQuery}" />
+          </div>
+          <table class="entries-table">
+            ${tableHeadReadOnlyHtml()}
+            <tbody>${entries.length ? entries.map(e=>entryRowHtml(name,e,true)).join("") : `<tr class="empty-row"><td colspan="5">No loads logged yet — check back once dispatch adds one.</td></tr>`}</tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+    <div class="celebration" id="overlay-modal"></div>
+  `;
+
+  document.getElementById("logout-btn").addEventListener("click", ()=>{ session=null; render(); });
+  document.getElementById("search-input").addEventListener("input", (e)=>{ searchQuery = e.target.value; renderAgentView(); });
+  runRingAnimations();
+}
+
+/* ================= ADMIN VIEW ================= */
+function exportCSV(){
+  let rows = [["Agent","Order ID","Broker Fee","Status","Notes","Date"]];
+  AGENTS.forEach(a=>{
+    state.agents[a].entries.forEach(e=>{
+      rows.push([a, e.orderId, e.brokerFee||0, STATUS_LABELS[e.status]||e.status, (e.notes||"").replace(/,/g," "), e.date]);
+    });
+  });
+  const csv = rows.map(r=>r.join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "mabpk-dispatch-board.csv";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function renderBonusPanel(){
+  let totalOwedPKR = 0;
+  const rows = AGENTS.map(a=>{
+    const total = agentTotal(a);
+    const pieces = [];
+    if(total >= MILESTONE_AMOUNT){
+      const paid = state.agents[a].milestonePaid;
+      if(!paid) totalOwedPKR += MILESTONE_BONUS_PKR;
+      pieces.push(`<span class="bonus-pill ${paid?'paid':''}"><input type="checkbox" data-milestone-pay="${a}" ${paid?'checked':''}/>$${MILESTONE_AMOUNT.toLocaleString()} hit &rarr; ${MILESTONE_BONUS_PKR.toLocaleString()} PKR ${paid?'(paid)':'(owed)'}</span>`);
+    }
+    for(let wi=0; wi<TOTAL_WEEKS; wi++){
+      const wt = weeklyTotalForWeek(a, wi);
+      if(wt >= WEEKLY_BONUS_THRESHOLD){
+        const paid = !!state.agents[a].weeklyPaid[wi];
+        if(!paid) totalOwedPKR += WEEKLY_BONUS_PKR;
+        pieces.push(`<span class="bonus-pill ${paid?'paid':''}"><input type="checkbox" data-weekly-pay="${a}" data-week="${wi}" ${paid?'checked':''}/>Week ${wi+1}: $${WEEKLY_BONUS_THRESHOLD} &rarr; ${WEEKLY_BONUS_PKR.toLocaleString()} PKR ${paid?'(paid)':'(owed)'}</span>`);
+      }
+    }
+    return `<div class="bonus-row"><div class="who">${a}</div>${pieces.length ? pieces.join("") : '<span class="no-bonus">No bonuses earned yet</span>'}</div>`;
+  }).join("");
+  return `
+    <div class="bonus-panel">
+      <p class="section-title" style="margin-bottom:6px;">Bonus tracker</p>
+      <div class="bonus-summary">
+        <div><div class="num">${totalOwedPKR.toLocaleString()} PKR</div><div class="lbl">Currently owed</div></div>
+        <div><div class="num">${MILESTONE_BONUS_PKR.toLocaleString()} PKR</div><div class="lbl">Per $${MILESTONE_AMOUNT} milestone</div></div>
+        <div><div class="num">${WEEKLY_BONUS_PKR.toLocaleString()} PKR</div><div class="lbl">Per $${WEEKLY_BONUS_THRESHOLD}/week</div></div>
+      </div>
+      ${rows}
+    </div>
+  `;
+}
+function renderLeaderboard(){
+  const wi = currentWeekIndex();
+  const weekly = AGENTS.map(a=>({name:a, val:weeklyTotalForWeek(a,wi)})).sort((a,b)=>b.val-a.val);
+  const overall = AGENTS.map(a=>({name:a, val:agentTotal(a)})).sort((a,b)=>b.val-a.val);
+  const rowsHtml = (list) => list.map((r,i)=>`<div class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-name">${r.name}</div><div class="lb-amt">$${r.val.toLocaleString()}</div></div>`).join("");
+  return `
+    <div class="two-col">
+      <div class="leaderboard"><p class="section-title">This week's leaderboard (Week ${wi+1})</p>${rowsHtml(weekly)}</div>
+      <div class="leaderboard"><p class="section-title">Overall leaderboard</p>${rowsHtml(overall)}</div>
+    </div>
+  `;
+}
+
+function renderAdminView(){
+  const root = document.getElementById("root");
+  const total = teamTotal();
+
+  root.innerHTML = `
+    <div class="app">
+      ${topbarHtml(session.adminName + " · Team Dashboard")}
+      <main>
+        <div class="hero-card">
+          ${renderRing({value:total, target:TEAM_TARGET, color:"#E8622C", big:true, key:"team"})}
+          <div class="hero-copy">
+            <h2>Team push · $${TEAM_TARGET.toLocaleString()} target</h2>
+            <p>Seven agents, one push. Only the broker fee counts, and only once a load is marked Paid — everything else is tracked separately below.</p>
+            <div class="hero-stats">
+              <div class="hero-stat"><div class="num">$${total.toLocaleString()}</div><div class="lbl">Paid so far</div></div>
+              <div class="hero-stat"><div class="num">$${Math.max(0, TEAM_TARGET-total).toLocaleString()}</div><div class="lbl">Remaining</div></div>
+              <div class="hero-stat"><div class="num">${AGENTS.filter(a=>agentTotal(a)>=INDIVIDUAL_TARGET).length}/${AGENTS.length}</div><div class="lbl">At target</div></div>
+              <div class="hero-stat"><div class="num">${AGENTS.reduce((s,a)=>s+openCount(a),0)}</div><div class="lbl">Loads in progress</div></div>
+            </div>
+          </div>
+        </div>
+
+        ${renderBonusPanel()}
+        ${renderLeaderboard()}
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <p class="section-title" style="margin:0;">Agents</p>
+          <button class="ghost-btn" id="export-csv-btn">⬇ Export CSV</button>
+        </div>
+        <div class="agent-grid" id="agent-grid">
+          ${AGENTS.map(a=>{
+            const t = agentTotal(a);
+            const color = agentColor(a);
+            const open = openCount(a);
+            return `
+              <div class="agent-card ${expandedAgent===a?'expanded':''}" data-agent="${a}">
+                <div class="agent-card-top">
+                  ${renderRing({value:t, target:INDIVIDUAL_TARGET, color, mini:true, key:"mini-"+a})}
+                  <div><div class="agent-name">${a}</div><div class="agent-total">$${t.toLocaleString()} / $${INDIVIDUAL_TARGET.toLocaleString()}</div></div>
+                </div>
+                <div class="badge-row">
+                  ${open ? `<span class="badge pending-badge">${open} in progress</span>` : ""}
+                  ${t>=MILESTONE_AMOUNT ? `<span class="badge milestone">$${MILESTONE_AMOUNT} hit</span>` : ""}
+                  ${t>=INDIVIDUAL_TARGET ? `<span class="badge target">Target</span>` : ""}
+                </div>
+                ${expandedAgent===a ? renderExpandedAgent(a) : ""}
+              </div>
+            `;
+          }).join("")}
+        </div>
+
+        <div class="panel">
+          <p class="section-title" style="margin-bottom:4px;">Admin access</p>
+          <p class="hint-text">Only these three can add, edit, or change status on any load. Agents can log in to view their own loads only — they can't edit anything.</p>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;">
+            ${ADMIN_ROLES.map(r=>`
+              <div class="pw-row" style="margin-top:0;">
+                <label style="margin:0;">${r}</label>
+                <input type="text" id="admin-pw-edit-${r}" value="${state.admins[r].password}" />
+                <button class="ghost-btn" data-save-adminpw="${r}">Save</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+        <div class="panel" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <p class="section-title" style="margin-bottom:4px;">Testing tools</p>
+            <p style="color:var(--muted);font-size:12.5px;margin:0;">Set real per-agent passwords by expanding each agent's card below.</p>
+          </div>
+          <button class="reset-btn" id="reset-btn">Reset all data</button>
+        </div>
+      </main>
+    </div>
+    <div class="celebration" id="overlay-modal"></div>
+  `;
+
+  document.getElementById("logout-btn").addEventListener("click", ()=>{ session=null; render(); });
+  document.getElementById("reset-btn").addEventListener("click", handleReset);
+  document.getElementById("export-csv-btn").addEventListener("click", exportCSV);
+  document.querySelectorAll("[data-save-adminpw]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const role = btn.getAttribute("data-save-adminpw");
+      const val = document.getElementById(`admin-pw-edit-${role}`).value.trim();
+      if(val){ state.admins[role].password = val; await saveState(); }
+    });
+  });
+  document.querySelectorAll("[data-milestone-pay]").forEach(cb=>{
+    cb.addEventListener("click",(e)=>{ e.stopPropagation(); toggleMilestonePaid(cb.getAttribute("data-milestone-pay")); });
+  });
+  document.querySelectorAll("[data-weekly-pay]").forEach(cb=>{
+    cb.addEventListener("click",(e)=>{ e.stopPropagation(); toggleWeeklyPaid(cb.getAttribute("data-weekly-pay"), cb.getAttribute("data-week")); });
+  });
+  document.querySelectorAll(".agent-card").forEach(card=>{
+    card.addEventListener("click", (e)=>{
+      const a = card.getAttribute("data-agent");
+      expandedAgent = expandedAgent === a ? null : a;
+      editingEntryId = null; searchQuery = "";
+      renderAdminView();
+    });
+  });
+  if(expandedAgent) bindExpandedAgentEvents(expandedAgent);
+  runRingAnimations();
+}
+
+function renderExpandedAgent(name){
+  const entries = filterEntries(state.agents[name].entries.slice().reverse());
+  return `
+    <div onclick="event.stopPropagation()" style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px;">
+      <div class="pw-row">
+        <label style="margin:0;">Password</label>
+        <input type="text" id="pw-edit-${name}" value="${state.agents[name].password}" />
+        <button class="ghost-btn" data-savepw="${name}">Save</button>
+      </div>
+
+      <p class="section-title" style="margin-top:16px;">Log a load on ${name}'s behalf</p>
+      <div class="add-form">
+        <div class="field"><input type="text" id="admin-orderid-${name}" placeholder="Order ID" /></div>
+        <div class="field"><input type="number" id="admin-fee-${name}" placeholder="Broker fee $" min="0" step="0.01" /></div>
+        <div class="field">
+          <select id="admin-status-${name}">${STATUS_ORDER.map(s=>`<option value="${s}">${STATUS_LABELS[s]}</option>`).join("")}</select>
+        </div>
+        <div class="field"><input type="text" id="admin-notes-${name}" placeholder="Notes" /></div>
+        <button class="primary-btn small" data-addfor="${name}">Log load</button>
+      </div>
+
+      <div class="search-row" style="margin-top:10px;">
+        <p class="section-title" style="margin:0;">Loads</p>
+        <input type="text" id="search-input" placeholder="Search order ID or notes" value="${searchQuery}" />
+      </div>
+      <table class="entries-table">
+        ${tableHeadHtml()}
+        <tbody>${entries.length ? entries.map(e=>entryRowHtml(name,e)).join("") : `<tr class="empty-row"><td colspan="6">No loads logged yet.</td></tr>`}</tbody>
+      </table>
+    </div>
+  `;
+}
+function bindExpandedAgentEvents(name){
+  const savePw = document.querySelector(`[data-savepw="${name}"]`);
+  if(savePw) savePw.addEventListener("click", async (e)=>{
+    e.stopPropagation();
+    const val = document.getElementById(`pw-edit-${name}`).value.trim();
+    if(val){ state.agents[name].password = val; await saveState(); }
+  });
+  const addBtn = document.querySelector(`[data-addfor="${name}"]`);
+  if(addBtn) addBtn.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    const orderId = document.getElementById(`admin-orderid-${name}`).value.trim();
+    const fee = parseFloat(document.getElementById(`admin-fee-${name}`).value);
+    const status = document.getElementById(`admin-status-${name}`).value;
+    const notes = document.getElementById(`admin-notes-${name}`).value.trim();
+    if(!orderId || isNaN(fee) || fee < 0) return;
+    addOrderEntry(name, orderId, fee, notes, status, renderAdminView);
+  });
+  const searchInput = document.getElementById("search-input");
+  if(searchInput) searchInput.addEventListener("input", (e)=>{ e.stopPropagation(); searchQuery = e.target.value; renderAdminView(); });
+  bindEntryRowEvents(name, renderAdminView);
+}
+async function handleReset(){
+  const ok = await showConfirmModal("This clears every agent's logged orders and totals. Continue?", "Yes, reset everything");
+  if(!ok) return;
+  state = defaultState();
+  prevPercents = {}; prevValues = {};
+  await saveState();
+  renderAdminView();
+}
+
+/* ================= MASTER RENDER ================= */
+function render(){
+  if(!session){ renderLogin(); return; }
+  if(session.role === "admin"){ renderAdminView(); } else { renderAgentView(); }
+}
+(async function init(){
+  document.getElementById("root").innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--muted);">Loading dispatch board…</div>`;
+  await loadState();
+  render();
+})();
+</script>
+</body>
 </html>
